@@ -28,8 +28,9 @@ pipeline {
             steps {
                  echo 'TODO: nexus'
             }
-            }
-        }   
         
+        }
     }
 }
+
+
