@@ -1,11 +1,15 @@
 pipeline {
     agent any
+    tools{
+        gradle 'grdl'
+        maven 'maven'
+    }
     stages {    
         stage('build & test')
         {
             steps {
                 echo 'TODO: build & test'
-                //sh "./mvnw clean compile -e"
+                sh 'gradle build'
             }
         }
         stage('sonar')
@@ -26,7 +30,7 @@ pipeline {
         stage('nexus') 
         {
             steps {
-                 echo 'TODO: nexus'
+                echo 'TODO: nexus'
             }
         
         }
