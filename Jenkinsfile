@@ -15,17 +15,24 @@ pipeline {
         {
             steps {
                 echo 'sonar'
-               // withSonarQubeEnv(credentialsId: 'SoniToken', installationName: 'Sonita') { // You can override the credential to be used
-            //sh './mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:3.7.0.1746:sonar'
+                withSonarQubeEnv(credentialsId: 'SoniToken') {
+                    -Dsonar.projectKey=ejemplo-gradle -Dsonar.java.binaries=build
+                }
             }
         }        
         stage('run') 
         {
             steps {
                 echo 'TODO: run'
-                //sh "./mvnw clean package -e"
+                sh 'gradle bootRun'
             }
         } 
+        stage('testing'){
+            steps {
+                echo 'TODO: testing'
+                sh 'curl -X GET http://localhost:8081/rest/mscovid/test?msg=testing'
+            }
+        }
         stage('nexus') 
         {
             steps {
