@@ -28,10 +28,11 @@ pipeline {
                 expression {
                     params.Build_Tool == 'maven'
                 }
-            }
-            script{
-                mvn_script.maven_build_test()
-            }          
+            }steps{
+                script{
+                    mvn_script.maven_build_test()
+                }     
+            }     
             
         }
         stage('build.gradle'){
@@ -41,7 +42,9 @@ pipeline {
                 }
             }
             steps{
-                gradle_script.gradle_build()
+                script{
+                    gradle_script.gradle_build()
+                }                
             }
         }
         /*stage('Sonar'){            
