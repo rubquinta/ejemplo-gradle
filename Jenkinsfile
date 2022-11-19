@@ -3,6 +3,10 @@ pipeline {
     tools{
         gradle 'grdl'
     }
+    parameters{
+        choice(name: 'Build_Tool', choices: [], description: '')
+        booleanParam(name: 'PushToNexus', defaultValue: false, description: '')
+    }
     stages {    
         stage('build & test')
         {
@@ -12,6 +16,11 @@ pipeline {
             }
         }
         stage('sonar')
+            when {
+                expression {
+                    params.PushToNexus
+                }
+            }
         {
             steps {
                 echo 'sonar'
