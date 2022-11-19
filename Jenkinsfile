@@ -1,34 +1,54 @@
+def mvn_script
+def gradle_script
+
 pipeline {
     agent any
     tools{
         gradle 'grdl'
+        maven 'maven_jenkins'
     }
     parameters{
-        choice(name: 'Build_Tool', choices: [], description: '')
+        choice(name: 'Build_Tool', choices: ['gradle', 'maven'], description: '')
         booleanParam(name: 'PushToNexus', defaultValue: false, description: '')
     }
     stages {    
-        stage('build & test')
-        {
-            steps {
-                echo 'TODO: build & test'
-                sh 'gradle build'
-            }
-        }
-        stage('sonar')
-            when {
-                expression {
-                    params.PushToNexus
+        stage('Loading Scripts'){
+            steps{
+                script{
+                    mvn_script = load "maven.groovy"
+                    gradle_Script = load "gradle.groovy"
                 }
             }
-        {
-            steps {
-                echo 'sonar'
-                withSonarQubeEnv(credentialsId: 'SoniToken') {
+        }
+        stage('build-mvn'){  
+            when {
+                expression {
+                    params.Build_Tool == 'maven'
+                }
+            }
+            script{
+                mvn_script.maven_build_test()
+            }          
+            
+        }
+        stage('build.gradle'){
+            when {
+                expression {
+                    params.Build_Tool == 'gradle'
+                }
+            }
+            steps{
+                gradle_script.gradle_build()
+            }
+        }
+        /*stage('Sonar'){            
+            //steps {
+                //echo 'sonar'
+                //withSonarQubeEnv(credentialsId: 'SoniToken') {
                     -Dsonar.projectKey=ejemplo-gradle -Dsonar.java.binaries=build
                 }
             }
-        }        
+        }  */      
         stage('run') 
         {
             steps {
@@ -42,8 +62,12 @@ pipeline {
                 sh 'curl -X GET http://localhost:8081/rest/mscovid/test?msg=testing'
             }
         }
-        stage('nexus') 
-        {
+        stage('pushToNexus'){
+            when {
+                expression {
+                    params.PushToNexus
+                }
+            }
             steps {
                 echo 'TODO: nexus'
             }
