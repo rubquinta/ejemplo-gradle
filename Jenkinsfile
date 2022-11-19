@@ -12,7 +12,9 @@ pipeline {
         booleanParam(name: 'PushToNexus', defaultValue: false, description: '')
     }
     stages {    
-        stage('Loading Scripts'){
+
+        stage('Loading Scripts')
+        {
             steps{
                 script{
                     mvn_script = load "maven.groovy"
@@ -20,7 +22,8 @@ pipeline {
                 }
             }
         }
-        stage('build-mvn'){  
+        stage('build-mvn')
+        {  
             when {
                 expression {
                     params.Build_Tool == 'maven'
