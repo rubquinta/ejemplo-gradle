@@ -1,17 +1,17 @@
 def gradle_build(){
-    steps{
+    stage{
         sh 'gradle build'
     }
 }
 
 def gradle_run(){
-    steps{
+    stage{
         sh 'gradle bootRun'
     }
 }
 
 def gradle_test(){
-    steps{
+    stage{
         sh 'Test: curl -X GET http://localhost:8081/rest/mscovid/test?msg=testing'
     }
 }
