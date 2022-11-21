@@ -1,5 +1,5 @@
 def maven_build_test(){  
-                sh './mvn clean install -e'
+        sh './mvnw clean install -e'
             
 }
 
