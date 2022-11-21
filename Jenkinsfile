@@ -14,8 +14,7 @@ pipeline {
         }   
     stages {    
 
-        stage('Loading Scripts')
-        {
+        stage('Loading Scripts'){
             steps{
                 script{
                     mvn_script = load "maven.groovy"
@@ -23,13 +22,11 @@ pipeline {
                 }
             }
         }
-        stage('build-mvn')
-        {  
+        stage('build-mvn'){  
             when {
-                expression {
-                    params.Build_tool == 'maven'
-                }
-            }steps{
+                expression {env.CHOICE == 'maven'}
+            }
+            steps{
                 script{
                     mvn_script.maven_build_test()
                 }     
@@ -38,9 +35,7 @@ pipeline {
         }
         stage('build.gradle'){
             when {
-                expression {
-                    params.Build_tool == 'gradle'
-                }
+                expression {env.CHOICE == 'gradle'}
             }
             steps{
                 script{
@@ -50,9 +45,7 @@ pipeline {
         }
         stage('Sonar'){ 
             when {
-                expression {
-                    params.Build_tool == 'gradle'
-                }
+                expression {env.CHOICE == 'gradle'}
             }           
             steps {
                 echo 'sonar'
@@ -62,12 +55,9 @@ pipeline {
                 }
             }
         }       
-        stage('run') 
-        {
+        stage('run'){
             when {
-                expression {
-                    params.Build_tool == 'gradle'
-                }
+                expression {env.CHOICE == 'gradle'}
             }
             steps {
                 echo 'TODO: run'
@@ -82,9 +72,7 @@ pipeline {
         }
         stage('pushToNexus'){
             when {
-                expression {
-                    params.PushToNexus
-                }
+                expression {params.PushToNexus}
             }
             steps {
                 echo 'TODO: nexus'
