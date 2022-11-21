@@ -1,6 +1,3 @@
-def mvn_script
-def gradle_script
-
 pipeline {
     agent any
     tools{
@@ -17,8 +14,8 @@ pipeline {
         stage('Loading Scripts'){
             steps{
                 script{
-                    mvn_script = load "maven.groovy"
-                    gradle_Script = load "gradle.groovy"
+                    def mvn_script = load "maven.groovy"
+                    def gradle_script = load "gradle.groovy"
                 }
             }
         }
@@ -38,10 +35,10 @@ pipeline {
                 expression {params.Build_tool == 'gradle'}
             }
             steps{
-                sh 'gradle build'
-                /*script{
+                //sh 'gradle build'
+                script{
                     gradle_script.gradle_build()
-                }   */             
+                }             
             }
         }
         stage('Sonar'){ 
