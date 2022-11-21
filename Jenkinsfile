@@ -9,7 +9,8 @@ pipeline {
     }
     parameters {
         booleanParam description: 'Use nexus uploader to push artifact', name: 'PushToNexus'
-        string 'Nexus Url'
+        string(name: 'installationName', defaultValue: 'sonita', description: 'Nombre instalacion Sonarqube')
+        string(name: 'credentialsId', defaultValue: 'SoniToken3', description: 'Credencial con TOken y configurada con Sonarqube')
         choice choices: ['gradle', 'maven'], description: 'which tool would you use', name: 'Build_tool'
         }   
     stages {    
@@ -50,7 +51,7 @@ pipeline {
             }           
             steps {
                 echo 'sonar'
-                withSonarQubeEnv(credentialsId: 'SoniToken3', installationName: 'sonita') {
+                withSonarQubeEnv(credentialsId: ${credentialsId}, installationName: ${installationName}) {
                     sh './gradlew -Dsonar.projectKey=ejemplo-gradle -Dsonar.java.binaries=build sonarqube'
                     //"-Dsonar.projectKey=ejemplo-gradle -Dsonar.java.binaries=build"
                 }
