@@ -51,7 +51,7 @@ pipeline {
             }           
             steps {
                 echo 'sonar'
-                withSonarQubeEnv(credentialsId: ${credentialsId}, installationName: ${installationName}) {
+                withSonarQubeEnv(credentialsId: params.credentialsId, installationName: params.installationName) {
                     sh './gradlew -Dsonar.projectKey=ejemplo-gradle -Dsonar.java.binaries=build sonarqube'
                     //"-Dsonar.projectKey=ejemplo-gradle -Dsonar.java.binaries=build"
                 }
