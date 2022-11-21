@@ -38,9 +38,10 @@ pipeline {
                 expression {params.Build_tool == 'gradle'}
             }
             steps{
-                script{
+                sh 'gradle build'
+                /*script{
                     gradle_script.gradle_build()
-                }                
+                }   */             
             }
         }
         stage('Sonar'){ 
