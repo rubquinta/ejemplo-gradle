@@ -7,10 +7,11 @@ pipeline {
         gradle 'grdl'
         maven 'maven_jenkins'
     }
-    parameters{
-        choice(name: 'Build_Tool', choices: ['gradle', 'maven'], description: '')
-        booleanParam(name: 'PushToNexus', defaultValue: false, description: '')
-    }
+    parameters {
+        booleanParam description: 'Use nexus uploader to push artifact', name: 'PushToNexus'
+        string 'Nexus Url'
+        choice choices: ['gradle', 'maven '], description: 'which tool would you use', name: 'Build_tool'
+        }   
     stages {    
 
         stage('Loading Scripts')
@@ -26,7 +27,7 @@ pipeline {
         {  
             when {
                 expression {
-                    params.Build_Tool == 'maven'
+                    params.Build_tool == 'maven'
                 }
             }steps{
                 script{
@@ -38,7 +39,7 @@ pipeline {
         stage('build.gradle'){
             when {
                 expression {
-                    params.Build_Tool == 'gradle'
+                    params.Build_tool == 'gradle'
                 }
             }
             steps{
@@ -47,16 +48,26 @@ pipeline {
                 }                
             }
         }
-        /*stage('Sonar'){            
-            //steps {
-                //echo 'sonar'
-                //withSonarQubeEnv(credentialsId: 'SoniToken') {
+        stage('Sonar'){ 
+            when {
+                expression {
+                    params.Build_tool == 'gradle'
+                }
+            }           
+            steps {
+                echo 'sonar'
+                withSonarQubeEnv(credentialsId: 'SoniToken2') {
                     -Dsonar.projectKey=ejemplo-gradle -Dsonar.java.binaries=build
                 }
             }
-        }  */      
+        }       
         stage('run') 
         {
+            when {
+                expression {
+                    params.Build_tool == 'gradle'
+                }
+            }
             steps {
                 echo 'TODO: run'
                 sh 'gradle bootRun'
@@ -76,6 +87,7 @@ pipeline {
             }
             steps {
                 echo 'TODO: nexus'
+                nexusPublisher nexusInstanceId: 'nxs01', nexusRepositoryId: 'devops-usach-nexus', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: '${WORKSPACE}/build/DevOpsUsach2020-0.0.1.jar']], mavenCoordinate: [artifactId: 'DevOpsUsach2020', groupId: 'com.devopsusach2020', packaging: 'jar', version: '0.0.1']]], tagName: '0.0.1'
             }
         
         }
