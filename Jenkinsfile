@@ -50,8 +50,8 @@ pipeline {
             }           
             steps {
                 echo 'sonar'
-                withSonarQubeEnv(credentialsId: 'SoniToken2', installationName: 'sonita') {
-                    sh './gradlew -Dsonar.projectKey=ejemplo-gradle -Dsonar.java.binaries=build sonarqube '
+                withSonarQubeEnv(credentialsId: 'SoniToken3', installationName: 'sonita') {
+                    sh './gradlew -Dsonar.projectKey=ejemplo-gradle -Dsonar.java.binaries=build sonarqube'
                     //"-Dsonar.projectKey=ejemplo-gradle -Dsonar.java.binaries=build"
                 }
             }
