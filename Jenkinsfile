@@ -10,7 +10,7 @@ pipeline {
     parameters {
         booleanParam description: 'Use nexus uploader to push artifact', name: 'PushToNexus'
         string 'Nexus Url'
-        choice choices: ['gradle', 'maven '], description: 'which tool would you use', name: 'Build_tool'
+        choice choices: ['gradle', 'maven'], description: 'which tool would you use', name: 'Build_tool'
         }   
     stages {    
 
@@ -24,7 +24,7 @@ pipeline {
         }
         stage('build-mvn'){  
             when {
-                expression {params.name == 'maven'}
+                expression {params.Build_tool == 'maven'}
             }
             steps{
                 script{
@@ -35,7 +35,7 @@ pipeline {
         }
         stage('build.gradle'){
             when {
-                expression {params.name == 'gradle'}
+                expression {params.Build_tool == 'gradle'}
             }
             steps{
                 script{
@@ -45,7 +45,7 @@ pipeline {
         }
         stage('Sonar'){ 
             when {
-                expression {params.name == 'gradle'}
+                expression {params.Build_tool == 'gradle'}
             }           
             steps {
                 echo 'sonar'
@@ -57,7 +57,7 @@ pipeline {
         }       
         stage('run'){
             when {
-                expression {params.name == 'gradle'}
+                expression {params.Build_tool == 'gradle'}
             }
             steps {
                 echo 'TODO: run'
