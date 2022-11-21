@@ -1,3 +1,6 @@
+def mvn_script 
+def gradle_script
+
 pipeline {
     agent any
     tools{
@@ -14,8 +17,8 @@ pipeline {
         stage('Loading Scripts'){
             steps{
                 script{
-                    def mvn_script = load "maven.groovy"
-                    def gradle_script = load "gradle.groovy"
+                    mvn_script = load "maven.groovy"
+                    gradle_script = load "gradle.groovy"
                 }
             }
         }
