@@ -24,7 +24,7 @@ pipeline {
         }
         stage('build-mvn'){  
             when {
-                expression {env.CHOICE == 'maven'}
+                expression {params.name == 'maven'}
             }
             steps{
                 script{
@@ -35,7 +35,7 @@ pipeline {
         }
         stage('build.gradle'){
             when {
-                expression {env.CHOICE == 'gradle'}
+                expression {params.name == 'gradle'}
             }
             steps{
                 script{
@@ -45,7 +45,7 @@ pipeline {
         }
         stage('Sonar'){ 
             when {
-                expression {env.CHOICE == 'gradle'}
+                expression {params.name == 'gradle'}
             }           
             steps {
                 echo 'sonar'
@@ -57,7 +57,7 @@ pipeline {
         }       
         stage('run'){
             when {
-                expression {env.CHOICE == 'gradle'}
+                expression {params.name == 'gradle'}
             }
             steps {
                 echo 'TODO: run'
