@@ -1,88 +1,244 @@
-def mvn_script 
-def gradle_script
+def mvn_init
+def grdl_init
+def pathbuild
 
 pipeline {
     agent any
-    tools{
-        gradle 'grdl'
+    tools 
+    {
+   	 	gradle 'gradle_env'
         maven 'maven_jenkins'
     }
-    parameters {
-        booleanParam description: 'Use nexus uploader to push artifact', name: 'PushToNexus'
-        string(name: 'installationName', defaultValue: 'sonita', description: 'Nombre instalacion Sonarqube')
-        string(name: 'credentialsId', defaultValue: 'SoniToken3', description: 'Credencial con TOken y configurada con Sonarqube')
-        choice choices: ['gradle', 'maven'], description: 'which tool would you use', name: 'Build_tool'
-        }   
-    stages {    
+    parameters
+    {
+        choice(name: 'Build_Tool', choices: ['Maven','Gradle'], description: 'Seleccion de Tipo Build')
+        booleanParam(name: 'PushToNexus' , defaultValue: true , description: 'Enviar hacia el Repositorio Nexus')
+        booleanParam(name: 'TestFromNexus' , defaultValue: false , description: 'Descargar el JAR desde Nexus y Testear')
+        booleanParam(name: 'RVNexus', defaultValue: false, description: 'Release Version 1.0.0 a Nexus')
+    }
+    stages 
+    {
+        stage('Init Scripts Maven')
+        {
+           when
+           {
+                expression
+                {
+                    params.Build_Tool=='Maven'
+                }
+            }
+            steps
+                {
+                script
+                    {
+                        echo "Agregando Script de Maven y Gradle"
+                        mvn_init = load "maven.groovy"
+                        pathbuild ="/build/"
+                    }
+                }
 
-        stage('Loading Scripts'){
-            steps{
-                script{
-                    mvn_script = load "maven.groovy"
-                    gradle_script = load "gradle.groovy"
+        }
+        stage('Init Scripts Gradle')
+        {
+           when
+           {
+                expression
+                {
+                    params.Build_Tool=='Gradle'
+                }
+            }
+            steps
+            {
+                script
+                {
+                    echo "Agregando Script  Gradle"
+                    grdl_init = load "gradle.groovy"
+                    pathbuild = "/build/libs/"
+                }
+            }
+        }        
+        stage('Maven Compile')
+        {
+            when
+            {
+                expression
+                {
+                    params.Build_Tool=='Maven'
+                }
+            }
+            steps
+            {
+                script
+                {
+                    mvn_init.maven_compile()
+                }
+            }
+
+        }
+        stage('Maven Test')
+        {
+            when
+            {
+                expression
+                {
+                    params.Build_Tool=='Maven'
+                }
+            }
+            steps
+            {
+                script
+                {
+                    mvn_init.mavel_test()
+                }
+            }
+
+        }
+        stage ('Maven Package')
+        {
+            when
+            {
+                expression
+                {
+                    params.Build_Tool=='Maven'
+                }
+            }
+            steps
+            {
+                script
+                {
+                    mvn_init.mavel_package()
                 }
             }
         }
-        stage('build-mvn'){  
-            when {
-                expression {params.Build_tool == 'maven'}
-            }
-            steps{
-                script{
-                    mvn_script.maven_build_test()
-                }     
-            }     
-            
-        }
-        stage('build.gradle'){
-            when {
-                expression {params.Build_tool == 'gradle'}
-            }
-            steps{
-                //sh 'gradle build'
-                script{
-                    gradle_script.gradle_build()
-                }             
-            }
-        }
-        stage('Sonar'){ 
-            when {
-                expression {params.Build_tool == 'gradle'}
-            }           
-            steps {
-                echo 'sonar'
-                withSonarQubeEnv(credentialsId: params.credentialsId, installationName: params.installationName) {
-                    sh './gradlew -Dsonar.projectKey=ejemplo-gradle -Dsonar.java.binaries=build sonarqube'
-                    //"-Dsonar.projectKey=ejemplo-gradle -Dsonar.java.binaries=build"
+        stage('Gradle: Build - Test -  Jar')
+        {
+            when
+            {
+                expression
+                {
+                    params.Build_Tool=='Gradle'
                 }
             }
-        }       
-        stage('run'){
-            when {
-                expression {params.Build_tool == 'gradle'}
-            }
-            steps {
-                echo 'TODO: run'
-                sh 'gradle bootRun'
+            steps
+            {
+                script
+                {
+                    grdl_init.gradle_build_test_jar()
+                }
             }
         } 
-        stage('testing'){
-            steps {
-                echo 'TODO: testing'
-                sh 'curl -X GET http://localhost:8081/rest/mscovid/test?msg=testing'
+
+        stage('Maven: Run and Test App')
+        {
+            when
+            {
+                expression
+                {
+                    params.Build_Tool=='Maven'
+                }
             }
-        }
-        stage('pushToNexus'){
-            when {
-                expression {params.PushToNexus}
+            steps
+            {
+                script
+                {
+                    mvn_init.maven_run_jar_test()
+                }
             }
-            steps {
-                echo 'TODO: nexus'
-                nexusPublisher nexusInstanceId: 'nxs01', nexusRepositoryId: 'devops-usach-nexus', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: '${WORKSPACE}/build/DevOpsUsach2020-0.0.1.jar']], mavenCoordinate: [artifactId: 'DevOpsUsach2020', groupId: 'com.devopsusach2020', packaging: 'jar', version: '0.0.1']]], tagName: '0.0.1'
+        } 
+
+        stage('Sonarque')
+ 	    {
+            steps
+            {
+               withSonarQubeEnv(credentialsId: 'rnpijenkins', installationName: 'rnpisonarqube')
+               {
+                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.7.0.1746:sonar -Dsonar.projectKey=ejemplo-gradle-maven -Dsonar.java.binaries=build'
+               }
             }
+	    }
+
+        stage('Run Gradle') 
+        {
+            when
+            {
+                expression
+                {
+                    params.Build_Tool=='Gradle'
+                }
         
+            }
+
+            steps 
+            {
+                script
+                {
+                    grdl_init.gradle_run()
+                }
+
+            }
         }
-    }
+
+        stage('PushToNexus')
+        {
+            when
+            {
+                expression
+                {
+                    params.PushToNexus
+
+                }
+            }
+
+            steps 
+            {
+                nexusPublisher nexusInstanceId: 'nexus_docker', nexusRepositoryId: 'devops-usach-nexus', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: "${WORKSPACE}"+"${pathbuild}"+"DevOpsUsach2020-0.0.1.jar"]], mavenCoordinate: [artifactId: 'DevOpsUsach2020', groupId: 'com.devopsusach2020', packaging: 'jar', version: '0.0.1']]]
+            }
+        }
+
+        stage ('Download Nexus Jar-Run-Test')
+        {
+            when
+            {
+                expression
+                {
+                    params.TestFromNexus
+                }
+            }
+	        steps
+		    {
+   		        sh 'curl http://nexus:8081/repository/devops-usach-nexus/com/devopsusach2020/DevOpsUsach2020/001/DevOpsUsach2020-001.jar --output /tmp/DevOpsUsach2020-001.jar'
+                sh 'java -jar /tmp/DevOpsUsach2020-001.jar &'
+		        sh 'curl -X GET  http://localhost:8081/rest/mscovid/test?msg=testing'
+                echo "Stopping App"
+                sh 'pkill -f "java -jar /tmp/DevOpsUsach2020-001.jar"'
+            }
+	      
+       }
+       stage ('Maven Only Publish Nexus 1.0.0')
+       {
+            when
+            {
+                expression
+                {
+                    params.RVNexus
+                }
+            }
+       	    steps
+		    { 
+                script
+                {
+                if ( params.Build_Tool =='Maven' )
+                    {
+                    mvn_init.maven_update_version('1.0.0')
+                    nexusPublisher nexusInstanceId: 'nexus_docker', nexusRepositoryId: 'devops-usach-nexus', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: "${WORKSPACE}"+"${pathbuild}"+"DevOpsUsach2020-1.0.0.jar"]], mavenCoordinate: [artifactId: 'DevOpsUsach2020', groupId: 'com.devopsusach2020', packaging: 'jar', version: '1.0.0']]]
+                    }
+                else
+                    {
+                        echo "Cannot Republish on Gradle yet :) "
+                    }
+
+		        }    
+            }
+       }
+   }
 }
-
-
