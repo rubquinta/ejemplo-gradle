@@ -1,6 +1,7 @@
 def mvn_init
 def grdl_init
 def pathbuild
+def GIT_COMMIT_USERNAME
 
 pipeline {
     agent any
@@ -34,6 +35,7 @@ pipeline {
                         echo "Agregando Script de Maven y Gradle"
                         mvn_init = load "maven.groovy"
                         pathbuild ="/build/"
+                        GIT_COMMIT_USERNAME = sh (script: 'git show -s --pretty=%an', returnStdout: true ).trim()
                     }
                 }
 
@@ -54,6 +56,7 @@ pipeline {
                     echo "Agregando Script  Gradle"
                     grdl_init = load "gradle.groovy"
                     pathbuild = "/build/libs/"
+                    GIT_COMMIT_USERNAME = sh (script: 'git show -s --pretty=%an', returnStdout: true ).trim()
                 }
             }
         }        
@@ -245,11 +248,11 @@ pipeline {
        {
         success
         {
-            slackSend channel: 'C045DSH239N', color: '#17FF00', message: "Build Success: ${env.CHANGE_AUTHOR} ${env.JOB_NAME} ${params.Build_Tool} Ejecucion Exitosa"
+            slackSend channel: 'C045DSH239N', color: '#17FF00', message: "Build Success: ${GIT_COMMIT_USERNAME} ${env.JOB_NAME} ${params.Build_Tool} Ejecucion Exitosa"
         }
         failure
         {
-            slackSend channel: 'C045DSH239N', color: '#FF0000', message: "Build Fallido: ${env.CHANGE_AUTHOR} ${env.JOB_NAME} ${params.Build_Tool} Ejecucion Fallida (<${env.BUILD_URL}|Open>)"
+            slackSend channel: 'C045DSH239N', color: '#FF0000', message: "Build Fallido: ${GIT_COMMIT_USERNAME} ${env.JOB_NAME} ${params.Build_Tool} Ejecucion Fallida (<${env.BUILD_URL}|Open>)"
         }
 
        }
