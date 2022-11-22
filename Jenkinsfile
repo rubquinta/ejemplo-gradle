@@ -6,7 +6,7 @@ pipeline {
     agent any
     tools 
     {
-   	 	gradle 'grdle'
+   	 	gradle 'grdl'
         maven 'maven_jenkins'
     }
     parameters
